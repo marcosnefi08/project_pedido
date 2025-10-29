@@ -1,3 +1,5 @@
+'use client'
+
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -8,13 +10,41 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { redirect } from "next/navigation";
+import { useState } from "react";
+import { Spinner } from "./ui/spinner";
+import { authClient } from "@/lib/auth-client";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+
+  const [loading, setloading] = useState(false)
+  const [error, setError] = useState("")
+
+  function handleLogin(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get("email") as string;
+    const senha = formData.get("senha") as string;
+
+    authClient.signIn.email({
+      email: email,
+      password: senha
+    },
+    {
+      onSuccess: () => redirect("/dashboard"),
+      onRequest: () => setloading(true),
+      onResponse:() => setloading(false),
+      onError: (ctx) => setError(ctx.error.message)
+    }
+
+  )
+  }
+
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form onSubmit={handleLogin} className={cn("flex flex-col gap-6", className)} {...props}>
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Login to your account</h1>
@@ -24,7 +54,7 @@ export function LoginForm({
         </div>
         <Field>
           <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input id="email" type="email" placeholder="m@example.com" required />
+          <Input id="email" name="email" type="email" placeholder="m@example.com" required />
         </Field>
         <Field>
           <div className="flex items-center">
@@ -36,10 +66,10 @@ export function LoginForm({
               Forgot your password?
             </a>
           </div>
-          <Input id="password" type="password" required />
+          <Input id="password" name="senha" type="password" required />
         </Field>
         <Field>
-          <Button type="submit">Login</Button>
+          <Button disabled={loading} type="submit">{loading ? <Spinner /> : "Login"}</Button>
         </Field>
         <FieldSeparator>Or continue with</FieldSeparator>
         <Field>
@@ -60,6 +90,8 @@ export function LoginForm({
           </FieldDescription>
         </Field>
       </FieldGroup>
+      {error && error}
+
     </form>
   )
 }
