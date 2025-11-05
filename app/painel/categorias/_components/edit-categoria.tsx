@@ -1,23 +1,21 @@
 'use client'
 
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Edit } from 'lucide-react'
+import { useState, useTransition } from 'react'
 import { editarCategoria } from '../actions'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
-import { Pencil } from 'lucide-react'
 
 interface EditCategoriaProps {
   categoria: {
@@ -28,65 +26,64 @@ interface EditCategoriaProps {
 
 export default function EditCategoria({ categoria }: EditCategoriaProps) {
   const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
 
   async function handleSubmit(formData: FormData) {
-    setLoading(true)
-    const result = await editarCategoria(categoria.id, formData)
-    setLoading(false)
+    startTransition(async () => {
+      const result = await editarCategoria(categoria.id, formData)
 
-    if (result.error) {
-      toast.error(result.error)
-    } else {
-      toast.success('Categoria editada com sucesso!')
-      setOpen(false)
-      router.refresh()
-    }
+      if (result.error) {
+        toast.error(result.error)
+      } else {
+        toast.success('Categoria atualizada com sucesso!')
+        setOpen(false)
+      }
+    })
   }
 
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger asChild>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         <Button variant="outline" size="sm">
-          <Pencil className="size-4" />
-          Editar
+          <Edit className="h-4 w-4" />
         </Button>
-      </DrawerTrigger>
-      <DrawerContent>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Editar Categoria</DialogTitle>
+          <DialogDescription>
+            Altere o nome da categoria.
+          </DialogDescription>
+        </DialogHeader>
         <form action={handleSubmit}>
-          <DrawerHeader>
-            <DrawerTitle>Editar Categoria</DrawerTitle>
-            <DrawerDescription>
-              Atualize o nome da categoria.
-            </DrawerDescription>
-          </DrawerHeader>
-          <div className="p-4 space-y-4">
+          <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="nome">Nome da Categoria</Label>
               <Input
                 id="nome"
                 name="nome"
                 defaultValue={categoria.nome}
-                placeholder="Ex: Pizza, Bebidas, Sobremesas..."
+                placeholder="Ex: Pizzas, Bebidas, Sobremesas..."
                 required
-                disabled={loading}
+                disabled={isPending}
               />
             </div>
           </div>
-          <DrawerFooter>
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Salvando...' : 'Salvar'}
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={isPending}
+            >
+              Cancelar
             </Button>
-            <DrawerClose asChild>
-              <Button type="button" variant="outline" disabled={loading}>
-                Cancelar
-              </Button>
-            </DrawerClose>
-          </DrawerFooter>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? 'Salvando...' : 'Salvar'}
+            </Button>
+          </DialogFooter>
         </form>
-      </DrawerContent>
-    </Drawer>
+      </DialogContent>
+    </Dialog>
   )
 }
-
