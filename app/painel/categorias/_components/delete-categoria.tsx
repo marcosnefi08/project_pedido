@@ -1,21 +1,19 @@
 'use client'
 
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog'
+import { Trash2 } from 'lucide-react'
+import { useState, useTransition } from 'react'
 import { excluirCategoria } from '../actions'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
-import { Trash2 } from 'lucide-react'
 
 interface DeleteCategoriaProps {
   categoria: {
@@ -26,56 +24,55 @@ interface DeleteCategoriaProps {
 
 export default function DeleteCategoria({ categoria }: DeleteCategoriaProps) {
   const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
 
   async function handleDelete() {
-    setLoading(true)
-    const result = await excluirCategoria(categoria.id)
-    setLoading(false)
+    startTransition(async () => {
+      const result = await excluirCategoria(categoria.id)
 
-    if (result.error) {
-      toast.error(result.error)
-    } else {
-      toast.success('Categoria excluída com sucesso!')
-      setOpen(false)
-      router.refresh()
-    }
+      if (result.error) {
+        toast.error(result.error)
+      } else {
+        toast.success('Categoria excluída com sucesso!')
+        setOpen(false)
+      }
+    })
   }
 
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger asChild>
-        <Button variant="destructive" size="sm">
-          <Trash2 className="size-4" />
-          Excluir
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Trash2 className="h-4 w-4 text-destructive" />
         </Button>
-      </DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader>
-          <DrawerTitle>Excluir Categoria</DrawerTitle>
-          <DrawerDescription>
-            Tem certeza que deseja excluir a categoria &quot;{categoria.nome}&quot;?
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Excluir Categoria</DialogTitle>
+          <DialogDescription>
+            Tem certeza que deseja excluir a categoria <strong>{categoria.nome}</strong>?
             Esta ação não pode ser desfeita.
-          </DrawerDescription>
-        </DrawerHeader>
-        <DrawerFooter>
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setOpen(false)}
+            disabled={isPending}
+          >
+            Cancelar
+          </Button>
           <Button
             type="button"
             variant="destructive"
             onClick={handleDelete}
-            disabled={loading}
+            disabled={isPending}
           >
-            {loading ? 'Excluindo...' : 'Confirmar Exclusão'}
+            {isPending ? 'Excluindo...' : 'Excluir Categoria'}
           </Button>
-          <DrawerClose asChild>
-            <Button type="button" variant="outline" disabled={loading}>
-              Cancelar
-            </Button>
-          </DrawerClose>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
-
