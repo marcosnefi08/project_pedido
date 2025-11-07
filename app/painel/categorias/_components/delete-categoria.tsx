@@ -11,9 +11,10 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog'
 import { Trash2 } from 'lucide-react'
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { excluirCategoria } from '../actions'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 interface DeleteCategoriaProps {
   categoria: {
@@ -25,6 +26,16 @@ interface DeleteCategoriaProps {
 export default function DeleteCategoria({ categoria }: DeleteCategoriaProps) {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const router = useRouter()
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  if (!isMounted) {
+    return null
+  }
 
   async function handleDelete() {
     startTransition(async () => {
@@ -35,6 +46,10 @@ export default function DeleteCategoria({ categoria }: DeleteCategoriaProps) {
       } else {
         toast.success('Categoria excluída com sucesso!')
         setOpen(false)
+        // Aguarda um pouco para a transição do modal fechar antes de atualizar
+        setTimeout(() => {
+          router.refresh()
+        }, 300)
       }
     })
   }
@@ -42,7 +57,7 @@ export default function DeleteCategoria({ categoria }: DeleteCategoriaProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="transition-all duration-200 hover:scale-105">
           <Trash2 className="h-4 w-4 text-destructive" />
         </Button>
       </DialogTrigger>

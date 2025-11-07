@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient } from "@/generated/prisma/client"
 
 // Garante uma única instância em ambientes de desenvolvimento (Next.js hot reload)
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient }

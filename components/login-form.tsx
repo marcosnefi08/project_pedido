@@ -10,10 +10,10 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { redirect } from "next/navigation";
 import { useState } from "react";
 import { Spinner } from "./ui/spinner";
 import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 export function LoginForm({
   className,
@@ -22,6 +22,7 @@ export function LoginForm({
 
   const [loading, setloading] = useState(false)
   const [error, setError] = useState("")
+  const router = useRouter()
 
   function handleLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -34,10 +35,16 @@ export function LoginForm({
       password: senha
     },
     {
-      onSuccess: () => redirect("/dashboard"),
+      onSuccess: () => {
+        router.push("/dashboard")
+        router.refresh()
+      },
       onRequest: () => setloading(true),
       onResponse:() => setloading(false),
-      onError: (ctx) => setError(ctx.error.message)
+      onError: (ctx) => {
+        setError(ctx.error.message)
+        setloading(false)
+      }
     }
 
   )
@@ -90,8 +97,14 @@ export function LoginForm({
           </FieldDescription>
         </Field>
       </FieldGroup>
-      {error && error}
+      {error && (
+        <div className="text-sm text-destructive text-center bg-destructive/10 p-3 rounded-md">
+          {error}
+        </div>
+      )}
 
     </form>
   )
 }
+
+export default LoginForm

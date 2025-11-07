@@ -3,14 +3,15 @@
 import { authClient } from "@/lib/auth-client";
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Spinner } from "./ui/spinner";
 
-export default function RegisterForm() {
+export default function RegisterPage() {
 
   const [loading, setloading] = useState(false)
   const [error, setError] = useState("")
+  const router = useRouter()
 
   function handleLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -25,7 +26,10 @@ export default function RegisterForm() {
       password: senha
     },
     {
-      onSuccess: () => redirect("/dashboard"),
+      onSuccess: () => {
+        router.push("/login")
+        router.refresh()
+      },
       onRequest: () => setloading(true),
       onResponse:() => setloading(false),
       onError: (ctx) => setError(ctx.error.message)

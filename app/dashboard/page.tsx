@@ -8,7 +8,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 
-import data from "./data.json"
+import data from "./data"
 
 export default function Page() {
   return (

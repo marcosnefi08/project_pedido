@@ -1,80 +1,93 @@
 'use client'
 
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer'
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useEffect, useState, useTransition } from 'react'
 import { criarCategoria } from '../actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
 export default function AddCategorias() {
   const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [isPending, startTransition] = useTransition()
   const router = useRouter()
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  if (!isMounted) {
+    return null
+  }
 
   async function handleSubmit(formData: FormData) {
-    setLoading(true)
-    const result = await criarCategoria(formData)
-    setLoading(false)
+    startTransition(async () => {
+      const result = await criarCategoria(formData)
 
-    if (result.error) {
-      toast.error(result.error)
-    } else {
-      toast.success('Categoria criada com sucesso!')
-      setOpen(false)
-      router.refresh()
-    }
+      if (result.error) {
+        toast.error(result.error)
+      } else {
+        toast.success('Categoria criada com sucesso!')
+        setOpen(false)
+        // Aguarda um pouco para a transição do modal fechar antes de atualizar
+        setTimeout(() => {
+          router.refresh()
+        }, 300)
+      }
+    })
   }
 
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger asChild>
-        <Button>Adicionar Categoria</Button>
-      </DrawerTrigger>
-      <DrawerContent>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="transition-all duration-200 hover:scale-105">Adicionar Categoria</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Adicionar Categoria</DialogTitle>
+          <DialogDescription>
+            Crie uma nova categoria para organizar seus produtos.
+          </DialogDescription>
+        </DialogHeader>
         <form action={handleSubmit}>
-          <DrawerHeader>
-            <DrawerTitle>Adicionar Nova Categoria</DrawerTitle>
-            <DrawerDescription>
-              Preencha o nome da categoria que deseja adicionar.
-            </DrawerDescription>
-          </DrawerHeader>
-          <div className="p-4 space-y-4">
+          <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="nome">Nome da Categoria</Label>
               <Input
                 id="nome"
                 name="nome"
-                placeholder="Ex: Pizza, Bebidas, Sobremesas..."
+                placeholder="Ex: Pizzas, Bebidas, Sobremesas..."
                 required
-                disabled={loading}
+                disabled={isPending}
               />
             </div>
           </div>
-          <DrawerFooter>
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Salvando...' : 'Salvar'}
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={isPending}
+            >
+              Cancelar
             </Button>
-            <DrawerClose asChild>
-              <Button type="button" variant="outline" disabled={loading}>
-                Cancelar
-              </Button>
-            </DrawerClose>
-          </DrawerFooter>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? 'Criando...' : 'Criar Categoria'}
+            </Button>
+          </DialogFooter>
         </form>
-      </DrawerContent>
-    </Drawer>
+      </DialogContent>
+    </Dialog>
   )
 }
-
