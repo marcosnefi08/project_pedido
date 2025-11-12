@@ -72,6 +72,6 @@ model Verification {
 }
 
 model Categorias {
-  id String @id @default(uuid())
+  id   String @id @default(uuid())
   nome String
 }
