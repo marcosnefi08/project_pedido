@@ -1,5 +1,5 @@
+import "dotenv/config";
 import { defineConfig, env } from "prisma/config";
-import "dotenv/config"; // ✅ Importação do dotenv
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
@@ -11,4 +11,3 @@ export default defineConfig({
     url: env("DATABASE_URL"),
   },
 });
-

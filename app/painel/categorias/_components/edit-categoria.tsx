@@ -13,10 +13,9 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Edit } from 'lucide-react'
-import { useEffect, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { editarCategoria } from '../actions'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
 
 interface EditCategoriaProps {
   categoria: {
@@ -28,16 +27,6 @@ interface EditCategoriaProps {
 export default function EditCategoria({ categoria }: EditCategoriaProps) {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const router = useRouter()
-  const [isMounted, setIsMounted] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-
-  if (!isMounted) {
-    return null
-  }
 
   async function handleSubmit(formData: FormData) {
     startTransition(async () => {
@@ -48,10 +37,6 @@ export default function EditCategoria({ categoria }: EditCategoriaProps) {
       } else {
         toast.success('Categoria atualizada com sucesso!')
         setOpen(false)
-        // Aguarda um pouco para a transição do modal fechar antes de atualizar
-        setTimeout(() => {
-          router.refresh()
-        }, 300)
       }
     })
   }
@@ -59,7 +44,7 @@ export default function EditCategoria({ categoria }: EditCategoriaProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="transition-all duration-200 hover:scale-105">
+        <Button variant="outline" size="sm">
           <Edit className="h-4 w-4" />
         </Button>
       </DialogTrigger>
@@ -94,7 +79,7 @@ export default function EditCategoria({ categoria }: EditCategoriaProps) {
               Cancelar
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? 'Salvando...' : 'Salvar'}
+              {isPending ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
           </DialogFooter>
         </form>

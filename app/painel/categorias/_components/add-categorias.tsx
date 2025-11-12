@@ -12,24 +12,13 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useEffect, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { criarCategoria } from '../actions'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
 
 export default function AddCategorias() {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const router = useRouter()
-  const [isMounted, setIsMounted] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-
-  if (!isMounted) {
-    return null
-  }
 
   async function handleSubmit(formData: FormData) {
     startTransition(async () => {
@@ -40,10 +29,6 @@ export default function AddCategorias() {
       } else {
         toast.success('Categoria criada com sucesso!')
         setOpen(false)
-        // Aguarda um pouco para a transição do modal fechar antes de atualizar
-        setTimeout(() => {
-          router.refresh()
-        }, 300)
       }
     })
   }
@@ -51,7 +36,7 @@ export default function AddCategorias() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="transition-all duration-200 hover:scale-105">Adicionar Categoria</Button>
+        <Button>Adicionar Categoria</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
